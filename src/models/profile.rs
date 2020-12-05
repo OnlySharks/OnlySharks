@@ -1,5 +1,5 @@
 struct Profile {
-    id: String,
+    id: i32,
     username: String,
     displayname: String,
     pronouns: String,

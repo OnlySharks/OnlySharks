@@ -3,3 +3,10 @@
 .idea/discord.xml
 
 .idea/workspace.xml
+
+.env
+.idea/dataSources/
+
+.idea/dataSources.local.xml
+
+.idea/dataSources.xml

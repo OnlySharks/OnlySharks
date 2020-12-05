@@ -39,20 +39,37 @@ pub fn posts_get(postid: String, conn: DbConn) -> Json<models::post::Post> {
 }
 
 #[delete("/<postid>")]
-fn posts_delete(postid: String) -> &'static str {
-    "Hello, world!"
+pub fn posts_delete(postid: String, conn: DbConn) -> Status {
+    use crate::schema::posts::dsl::*;
+
+    diesel::delete(posts.filter(id.eq(postid)))
+        .execute(&*conn)
+        .expect("Error deleting post");
+
+    return Status::Ok;
 }
 
-#[patch("/<postid>")]
-fn posts_patch(postid: String) -> &'static str {
-    "Hello, world!"
+#[patch("/<postid>", data = "<data>")]
+pub fn posts_patch(data: Json<models::post::EditPost>, postid: String, conn: DbConn) -> Status {
+    use crate::schema::posts::dsl::*;
+
+    if Regex::new("[^i*🦈]").unwrap().is_match(&*data.0.content) || &*data.0.content == "" {
+        return Status::BadRequest;
+    }
+
+    diesel::update(posts.find(postid))
+        .set(content.eq(data.0.content))
+        .get_result::<crate::models::post::Post>(&*conn)
+        .expect("Error updating post");
+
+    return Status::Ok;
 }
 
 #[post("/new", data = "<data>")]
 pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn) -> Status {
     use crate::schema::posts::dsl::*;
 
-    if Regex::new("[^i*🦈]").unwrap().is_match(&*data.0.content) {
+    if Regex::new("[^i*🦈]").unwrap().is_match(&*data.0.content) || &*data.0.content == "" {
         return Status::BadRequest;
     }
 

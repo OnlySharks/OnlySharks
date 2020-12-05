@@ -29,7 +29,10 @@ fn main() {
         // Index
         .mount("/", routes![index])
         // Posts
-        .mount("/api/posts", routes![endpoints::posts::new_post, endpoints::posts::posts_get])
+        .mount("/api/posts", routes![endpoints::posts::new_post,
+                                                endpoints::posts::posts_get,
+                                                endpoints::posts::posts_delete,
+                                                endpoints::posts::posts_patch])
         // Profiles
         // Search
         .launch();

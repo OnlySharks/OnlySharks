@@ -11,6 +11,11 @@ pub struct Post {
 }
 
 #[derive(Deserialize)]
+pub struct EditPost {
+    pub content: String,
+}
+
+#[derive(Deserialize)]
 pub struct NewPostReq {
     pub content: String,
     pub images: Option<Vec<String>>,

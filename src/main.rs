@@ -47,5 +47,8 @@ fn main() {
                                                 endpoints::users::follow_user,
                                                 endpoints::users::unfollow_user])
         // Search
+        .mount("/api/search", routes![endpoints::search::search_displayname])
+        // Timeline
+        // Start the web server
         .launch();
 }

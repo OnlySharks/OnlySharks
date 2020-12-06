@@ -1,8 +1,8 @@
 -- Your SQL goes here
 CREATE TABLE users (
-    id TEXT NOT NULL DEFAULT md5(random()::text),
-    username TEXT NOT NULL,
-    email TEXT NOT NULL,
+    id TEXT UNIQUE NOT NULL DEFAULT md5(random()::text),
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     creationdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     displayname TEXT NOT NULL,
@@ -13,6 +13,6 @@ CREATE TABLE users (
     posts TEXT[] NOT NULL DEFAULT '{}',
     likedposts TEXT[] NOT NULL DEFAULT '{}',
     following TEXT[] NOT NULL DEFAULT '{}',
-    authkey TEXT NOT NULL,
+    authkey TEXT UNIQUE NOT NULL,
     PRIMARY KEY (id)
 )

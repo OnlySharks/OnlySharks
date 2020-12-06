@@ -65,6 +65,72 @@ pub fn posts_delete(postid: String, conn: DbConn, key: crate::services::jwt::Cla
     return Status::Ok;
 }
 
+#[put("/<postid>/like")]
+pub fn like_posts(postid: String, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
+    use crate::schema::posts::dsl as posts_dsl;
+    use crate::schema::users::dsl as users_dsl;
+
+    let mut already_liked = false;
+
+    let profile_results = users_dsl::users.filter(users_dsl::id.eq(&key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error getting user's data");
+
+    for result in profile_results {
+        if result.likedposts.contains(&postid) {
+            already_liked = true;
+        }
+    }
+
+    if already_liked {
+        return Status::Ok;
+    }
+
+    diesel::update(posts_dsl::posts.find(&postid))
+        .set(posts_dsl::likes.eq(posts_dsl::likes + 1))
+        .get_result::<crate::models::post::Post>(&*conn)
+        .expect("Error updating post");
+
+    diesel::sql_query(format!("UPDATE users SET likedposts = array_append(likedposts, '{}') WHERE id='{}';", postid, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's liked posts list");
+
+    return Status::Ok;
+}
+
+#[delete("/<postid>/like")]
+pub fn unlike_posts(postid: String, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
+    use crate::schema::posts::dsl as posts_dsl;
+    use crate::schema::users::dsl as users_dsl;
+
+    let mut already_liked = false;
+
+    let profile_results = users_dsl::users.filter(users_dsl::id.eq(&key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error getting user's data");
+
+    for result in profile_results {
+        if result.likedposts.contains(&postid) {
+            already_liked = true;
+        }
+    }
+
+    if !already_liked {
+        return Status::Ok;
+    }
+
+    diesel::update(posts_dsl::posts.find(&postid))
+        .set(posts_dsl::likes.eq(posts_dsl::likes - 1))
+        .get_result::<crate::models::post::Post>(&*conn)
+        .expect("Error updating post");
+
+    diesel::sql_query(format!("UPDATE users SET likedposts = array_remove(likedposts, '{}') WHERE id='{}';", postid, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's liked posts list");
+
+    return Status::Ok;
+}
+
 #[patch("/<postid>", data = "<data>")]
 pub fn posts_patch(data: Json<models::post::EditPost>, postid: String, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
     use crate::schema::posts::dsl::*;
@@ -115,7 +181,6 @@ pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn, key: crate::
         .values(&new_post)
         .get_result::<crate::models::post::Post>(&*conn)
         .expect("Error saving new post");
-
 
     diesel::sql_query(format!("UPDATE users SET posts = array_append(posts, '{}') WHERE id='{}';", post.id, &key.sub))
         .load::<crate::models::profile::Profile>(&*conn)

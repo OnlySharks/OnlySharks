@@ -33,7 +33,9 @@ fn main() {
         .mount("/api/posts", routes![endpoints::posts::new_post,
                                                 endpoints::posts::posts_get,
                                                 endpoints::posts::posts_delete,
-                                                endpoints::posts::posts_patch])
+                                                endpoints::posts::posts_patch,
+                                                endpoints::posts::like_posts,
+                                                endpoints::posts::unlike_posts])
         // Profiles
         .mount("/api/users", routes![endpoints::users::create_user,
                                                 endpoints::users::login_user])

@@ -58,9 +58,13 @@ pub fn posts_delete(postid: String, conn: DbConn, key: crate::services::jwt::Cla
         return Status::Unauthorized;
     }
 
-    diesel::delete(posts.filter(id.eq(postid)))
+    diesel::delete(posts.filter(id.eq(&postid)))
         .execute(&*conn)
         .expect("Error deleting post");
+
+    diesel::sql_query(format!("UPDATE users SET posts = array_remove(posts, '{}') WHERE id='{}';", &postid, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's post list");
 
     return Status::Ok;
 }
@@ -89,7 +93,7 @@ pub fn like_posts(postid: String, conn: DbConn, key: crate::services::jwt::Claim
     diesel::update(posts_dsl::posts.find(&postid))
         .set(posts_dsl::likes.eq(posts_dsl::likes + 1))
         .get_result::<crate::models::post::Post>(&*conn)
-        .expect("Error updating post");
+        .expect("Error liking post");
 
     diesel::sql_query(format!("UPDATE users SET likedposts = array_append(likedposts, '{}') WHERE id='{}';", postid, &key.sub))
         .load::<crate::models::profile::Profile>(&*conn)

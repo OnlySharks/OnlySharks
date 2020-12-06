@@ -39,7 +39,7 @@ pub fn posts_get(postid: String, conn: DbConn) -> Json<models::post::Post> {
 }
 
 #[delete("/<postid>")]
-pub fn posts_delete(postid: String, conn: DbConn) -> Status {
+pub fn posts_delete(postid: String, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
     use crate::schema::posts::dsl::*;
 
     let mut correct_user = false;

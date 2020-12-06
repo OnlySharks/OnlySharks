@@ -35,7 +35,8 @@ fn main() {
                                                 endpoints::posts::posts_delete,
                                                 endpoints::posts::posts_patch])
         // Profiles
-        .mount("/api/users", routes![endpoints::users::create_user])
+        .mount("/api/users", routes![endpoints::users::create_user,
+                                                endpoints::users::login_user])
         // Search
         .launch();
 }

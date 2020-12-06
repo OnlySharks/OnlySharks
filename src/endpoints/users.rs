@@ -46,11 +46,46 @@ pub fn create_user(data: Form<models::profile::UserCreateFormData>, conn: DbConn
 }
 
 #[post("/login", data = "<data>")]
-pub fn login_user(data: Json<models::post::EditPost>, conn: DbConn) -> Status {
-    use crate::schema::posts::dsl::*;
+pub fn login_user(data: Form<models::profile::LoginData>, conn: DbConn) -> String {
+    use crate::schema::users::dsl::*;
     sodiumoxide::init().unwrap();
 
-    let user =
+    let mut hashed_pass_from_db: String = "".to_string();
+    let mut hash_padding = [0u8; 128];
+    let mut user_id = "".to_string();
 
-    return Status::Ok;
+    let results = users.filter(username.eq(data.0.username))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error loading user");
+
+    for result in results {
+        hashed_pass_from_db = result.password;
+        user_id = result.id;
+    }
+
+    hashed_pass_from_db
+        .as_bytes()
+        .iter()
+        .enumerate()
+        .for_each(|(i, byte)|{
+            hash_padding[i] = byte.clone();
+        });
+
+    let pass_check = match argon2id13::HashedPassword::from_slice(&hash_padding) {
+        Some(hp) => argon2id13::pwhash_verify(&hp, data.0.password.as_bytes()),
+        _ => false,
+    };
+
+    return if pass_check {
+        let new_jwt = crate::services::jwt::encode_jwt((&*user_id).parse().unwrap());
+
+        diesel::update(users.find(user_id))
+            .set(authkey.eq(&new_jwt))
+            .get_result::<crate::models::profile::Profile>(&*conn)
+            .expect("Error creating new JWT");
+
+        new_jwt
+    } else {
+        "err".to_string()
+    }
 }

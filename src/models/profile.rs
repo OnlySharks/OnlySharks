@@ -1,6 +1,6 @@
 use crate::schema::users;
 
-#[derive(Serialize, Deserialize, Queryable, PartialEq, Insertable)]
+#[derive(Serialize, Deserialize, Queryable, PartialEq, Insertable, QueryableByName)]
 #[table_name="users"]
 pub struct Profile {
     pub id: String,

@@ -106,15 +106,20 @@ pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn, key: crate::
     }
 
     let new_post = NewPost{
-        creatorid: key.sub,
+        creatorid: key.sub.clone(),
         content: data.0.content,
         images: data.0.images
     };
 
-    diesel::insert_into(posts)
+    let post = diesel::insert_into(posts)
         .values(&new_post)
         .get_result::<crate::models::post::Post>(&*conn)
         .expect("Error saving new post");
+
+
+    diesel::sql_query(format!("UPDATE users SET posts = array_append(posts, '{}') WHERE id='{}';", post.id, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's post list");
 
     return Status::Ok;
 }

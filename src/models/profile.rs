@@ -34,13 +34,13 @@ pub struct PublicProfile {
     pub following: Vec<String>
 }
 
-#[derive(FromForm, Deserialize)]
+#[derive(Deserialize)]
 pub struct LoginData {
     pub username: String,
     pub password: String
 }
 
-#[derive(FromForm, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserCreateFormData {
     pub email: String,
     pub username: String,
@@ -56,5 +56,23 @@ pub struct UserCreateData {
     pub username: String,
     pub password: String,
     pub displayname: String,
-    pub birthday: chrono::NaiveDate
+    pub birthday: chrono::NaiveDate,
+    pub authkey: String
+}
+
+#[derive(Insertable, Deserialize)]
+#[table_name="users"]
+pub struct UserEditData {
+    pub username: String,
+    pub email: String,
+    pub displayname: String,
+    pub pronouns: String,
+    pub description: String,
+    pub birthday: chrono::NaiveDate,
+}
+
+#[derive(Insertable, Deserialize)]
+#[table_name="users"]
+pub struct UserEditPass {
+    pub password: String,
 }

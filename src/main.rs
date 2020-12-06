@@ -39,7 +39,11 @@ fn main() {
         // Profiles
         .mount("/api/users", routes![endpoints::users::create_user,
                                                 endpoints::users::login_user,
-                                                endpoints::users::logout_user])
+                                                endpoints::users::logout_user,
+                                                endpoints::users::show_user,
+                                                endpoints::users::get_user_id,
+                                                endpoints::users::edit_user,
+                                                endpoints::users::edit_user_pass])
         // Search
         .launch();
 }

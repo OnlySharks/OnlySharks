@@ -43,7 +43,9 @@ fn main() {
                                                 endpoints::users::show_user,
                                                 endpoints::users::get_user_id,
                                                 endpoints::users::edit_user,
-                                                endpoints::users::edit_user_pass])
+                                                endpoints::users::edit_user_pass,
+                                                endpoints::users::follow_user,
+                                                endpoints::users::unfollow_user])
         // Search
         .launch();
 }

@@ -208,3 +208,67 @@ pub fn edit_user_pass(data: Json<models::profile::UserEditPass>, conn: DbConn, k
 
     return new_jwt;
 }
+
+#[put("/<userid>/follow")]
+pub fn follow_user(userid: String, conn: DbConn, key: crate::services::jwt::Claims) -> String {
+    use crate::schema::users::dsl::*;
+
+    let mut already_followed = false;
+
+    let profile_results = users.filter(id.eq(&key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error getting user's data");
+
+    for result in profile_results {
+        if result.following.contains(&userid) {
+            already_followed = true;
+        }
+    }
+
+    if already_followed {
+        return "Already following".to_string();
+    }
+
+    diesel::update(users.find(&userid))
+        .set(followers.eq(followers + 1))
+        .get_result::<crate::models::profile::Profile>(&*conn)
+        .expect("Error following user");
+
+    diesel::sql_query(format!("UPDATE users SET following = array_append(following, '{}') WHERE id='{}';", userid, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's following list");
+
+    return "Now following".to_string();
+}
+
+#[delete("/<userid>/follow")]
+pub fn unfollow_user(userid: String, conn: DbConn, key: crate::services::jwt::Claims) -> String {
+    use crate::schema::users::dsl::*;
+
+    let mut already_followed = false;
+
+    let profile_results = users.filter(id.eq(&key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error getting user's data");
+
+    for result in profile_results {
+        if result.following.contains(&userid) {
+            already_followed = true;
+        }
+    }
+
+    if !already_followed {
+        return "Not following".to_string();
+    }
+
+    diesel::update(users.find(&userid))
+        .set(followers.eq(followers - 1))
+        .get_result::<crate::models::profile::Profile>(&*conn)
+        .expect("Error unfollowing user");
+
+    diesel::sql_query(format!("UPDATE users SET following = array_remove(following, '{}') WHERE id='{}';", userid, &key.sub))
+        .load::<crate::models::profile::Profile>(&*conn)
+        .expect("Error updating user's following list");
+
+    return "Unfollowed".to_string();
+}

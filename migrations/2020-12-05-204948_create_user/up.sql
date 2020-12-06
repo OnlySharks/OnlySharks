@@ -14,5 +14,7 @@ CREATE TABLE users (
     likedposts TEXT[] NOT NULL DEFAULT '{}',
     following TEXT[] NOT NULL DEFAULT '{}',
     authkey TEXT UNIQUE NOT NULL,
+    pfp TEXT NOT NULL DEFAULT 'https://www.ikea.com/ca/en/images/products/blahaj-soft-toy-shark__0710175_PE727378_S5.JPG',
+    banner TEXT NOT NULL DEFAULT  'https://img.srgcdn.com/e//OGhnMWtSQ1lkb1d6RVJvNnRpMnkucG5n.jpg',
     PRIMARY KEY (id)
 )

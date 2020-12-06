@@ -25,6 +25,8 @@ table! {
         likedposts -> Array<Text>,
         following -> Array<Text>,
         authkey -> Text,
+        pfp -> Text,
+        banner -> Text,
     }
 }
 

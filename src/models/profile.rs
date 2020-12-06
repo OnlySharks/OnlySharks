@@ -16,7 +16,9 @@ pub struct Profile {
     pub posts: Vec<String>,
     pub likedposts: Vec<String>,
     pub following: Vec<String>,
-    pub authkey: String
+    pub authkey: String,
+    pub pfp: String,
+    pub banner: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, PartialEq)]
@@ -31,7 +33,9 @@ pub struct PublicProfile {
     pub followers: i32,
     pub posts: Vec<String>,
     pub likedposts: Vec<String>,
-    pub following: Vec<String>
+    pub following: Vec<String>,
+    pub pfp: String,
+    pub banner: String
 }
 
 #[derive(Deserialize)]
@@ -69,6 +73,8 @@ pub struct UserEditData {
     pub pronouns: String,
     pub description: String,
     pub birthday: chrono::NaiveDate,
+    pub pfp: String,
+    pub banner: String
 }
 
 #[derive(Insertable, Deserialize)]

@@ -36,12 +36,12 @@ pub fn create_user(data: Json<models::profile::UserCreateFormData>, conn: DbConn
     let new_user_id = result.id;
     let new_jwt = crate::services::jwt::encode_jwt((&*new_user_id).parse().unwrap());
 
-    diesel::update(users.find(new_user_id))
+    diesel::update(users.find(&new_user_id))
         .set(authkey.eq(&new_jwt))
         .get_result::<crate::models::profile::Profile>(&*conn)
         .expect("Error creating new JWT");
 
-    return new_jwt;
+    return format!("{},{}", new_jwt, new_user_id);
 }
 
 #[post("/login", data = "<data>")]
@@ -78,12 +78,12 @@ pub fn login_user(data: Json<models::profile::LoginData>, conn: DbConn) -> Strin
     return if pass_check {
         let new_jwt = crate::services::jwt::encode_jwt((&*user_id).parse().unwrap());
 
-        diesel::update(users.find(user_id))
+        diesel::update(users.find(&user_id))
             .set(authkey.eq(&new_jwt))
             .get_result::<crate::models::profile::Profile>(&*conn)
             .expect("Error creating new JWT");
 
-        new_jwt
+        format!("{},{}", new_jwt, user_id)
     } else {
         "err".to_string()
     }
@@ -120,7 +120,9 @@ pub fn show_user(conn: DbConn, userid: String) -> Json<crate::models::profile::P
         followers: 404,
         posts: vec![],
         likedposts: vec![],
-        following: vec![]
+        following: vec![],
+        pfp: "404".to_string(),
+        banner: "404".to_string()
     };
 
     for profile in results {
@@ -135,7 +137,9 @@ pub fn show_user(conn: DbConn, userid: String) -> Json<crate::models::profile::P
             followers: profile.followers,
             posts: profile.posts,
             likedposts: profile.likedposts,
-            following: profile.following
+            following: profile.following,
+            pfp: profile.pfp,
+            banner: profile.banner
         };
     }
 
@@ -170,7 +174,9 @@ pub fn edit_user(data: Json<models::profile::UserEditData>, conn: DbConn, key: c
             displayname.eq(data.0.displayname),
             pronouns.eq(data.0.pronouns),
             description.eq(data.0.description),
-            birthday.eq(data.0.birthday)
+            birthday.eq(data.0.birthday),
+            pfp.eq(data.0.pfp),
+            banner.eq(data.0.banner)
         ))
         .get_result::<crate::models::profile::Profile>(&*conn)
         .expect("Unable to update user profile");

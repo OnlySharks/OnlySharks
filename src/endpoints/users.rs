@@ -1,7 +1,5 @@
 use diesel::prelude::*;
-use regex::Regex;
 use rocket::http::Status;
-use rocket::request::Form;
 use rocket_contrib::json::Json;
 use sodiumoxide::crypto::pwhash::argon2id13;
 

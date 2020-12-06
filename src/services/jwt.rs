@@ -1,14 +1,12 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey, TokenData};
+use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::env;
-use jsonwebtoken::errors::{ErrorKind, Error};
+use jsonwebtoken::errors::{Error};
 use rocket::Outcome;
 use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
 use diesel::prelude::*;
 use crate::DbConn;
-use rocket::http::hyper::net::NetworkConnector;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {

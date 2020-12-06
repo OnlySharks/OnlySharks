@@ -49,6 +49,7 @@ fn main() {
         // Search
         .mount("/api/search", routes![endpoints::search::search_displayname])
         // Timeline
+        .mount("/api/timeline", routes![endpoints::timeline::get_timeline])
         // Start the web server
         .launch();
 }

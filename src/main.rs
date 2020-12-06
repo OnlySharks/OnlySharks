@@ -4,6 +4,7 @@
 #[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate diesel;
+extern crate jsonwebtoken;
 
 use rocket_contrib::databases::{database};
 
@@ -34,6 +35,7 @@ fn main() {
                                                 endpoints::posts::posts_delete,
                                                 endpoints::posts::posts_patch])
         // Profiles
+        .mount("/api/users", routes![endpoints::users::create_user])
         // Search
         .launch();
 }

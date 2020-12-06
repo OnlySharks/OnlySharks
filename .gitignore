@@ -10,3 +10,7 @@
 .idea/dataSources.local.xml
 
 .idea/dataSources.xml
+
+src/services/keys/public.pem
+
+src/services/keys/private.pem

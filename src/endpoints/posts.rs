@@ -42,6 +42,22 @@ pub fn posts_get(postid: String, conn: DbConn) -> Json<models::post::Post> {
 pub fn posts_delete(postid: String, conn: DbConn) -> Status {
     use crate::schema::posts::dsl::*;
 
+    let mut correct_user = false;
+
+    let results = posts.filter(id.eq(&postid))
+        .load::<crate::models::post::Post>(&*conn)
+        .expect("Error verifying key");
+
+    for result in results {
+        if result.creatorid == key.sub {
+            correct_user = true;
+        }
+    }
+
+    if !correct_user {
+        return Status::Unauthorized;
+    }
+
     diesel::delete(posts.filter(id.eq(postid)))
         .execute(&*conn)
         .expect("Error deleting post");
@@ -50,14 +66,30 @@ pub fn posts_delete(postid: String, conn: DbConn) -> Status {
 }
 
 #[patch("/<postid>", data = "<data>")]
-pub fn posts_patch(data: Json<models::post::EditPost>, postid: String, conn: DbConn) -> Status {
+pub fn posts_patch(data: Json<models::post::EditPost>, postid: String, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
     use crate::schema::posts::dsl::*;
+
+    let mut correct_user = false;
+
+    let results = posts.filter(id.eq(&postid))
+        .load::<crate::models::post::Post>(&*conn)
+        .expect("Error verifying key");
+
+    for result in results {
+        if result.creatorid == key.sub {
+            correct_user = true;
+        }
+    }
+
+    if !correct_user {
+        return Status::Unauthorized;
+    }
 
     if Regex::new("[^i*🦈]").unwrap().is_match(&*data.0.content) || &*data.0.content == "" {
         return Status::BadRequest;
     }
 
-    diesel::update(posts.find(postid))
+    diesel::update(posts.find(&postid))
         .set(content.eq(data.0.content))
         .get_result::<crate::models::post::Post>(&*conn)
         .expect("Error updating post");
@@ -66,7 +98,7 @@ pub fn posts_patch(data: Json<models::post::EditPost>, postid: String, conn: DbC
 }
 
 #[post("/new", data = "<data>")]
-pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn) -> Status {
+pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn, key: crate::services::jwt::Claims) -> Status {
     use crate::schema::posts::dsl::*;
 
     if Regex::new("[^i*🦈]").unwrap().is_match(&*data.0.content) || &*data.0.content == "" {
@@ -74,7 +106,7 @@ pub fn new_post(data: Json<models::post::NewPostReq>, conn: DbConn) -> Status {
     }
 
     let new_post = NewPost{
-        creatorid: "gaming".to_string(),
+        creatorid: key.sub,
         content: data.0.content,
         images: data.0.images
     };

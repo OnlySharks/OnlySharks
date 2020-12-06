@@ -89,3 +89,15 @@ pub fn login_user(data: Form<models::profile::LoginData>, conn: DbConn) -> Strin
         "err".to_string()
     }
 }
+
+#[post("/logout")]
+pub fn logout_user(conn: DbConn, key: crate::services::jwt::Claims) -> Status{
+    use crate::schema::users::dsl::*;
+
+    diesel::update(users.find(&key.sub))
+        .set(authkey.eq("".to_string()))
+        .get_result::<crate::models::profile::Profile>(&*conn)
+        .expect("Error revoking new JWT");
+
+    return Status::Ok;
+}

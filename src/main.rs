@@ -38,7 +38,8 @@ fn main() {
                                                 endpoints::posts::unlike_posts])
         // Profiles
         .mount("/api/users", routes![endpoints::users::create_user,
-                                                endpoints::users::login_user])
+                                                endpoints::users::login_user,
+                                                endpoints::users::logout_user])
         // Search
         .launch();
 }
